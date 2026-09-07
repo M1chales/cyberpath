@@ -1,0 +1,33 @@
+@import "tailwindcss";
+
+:root {
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: #05070a;
+  color: #d7dde3;
+  font-family: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+code, pre, .font-mono {
+  font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+}
+
+::selection {
+  background: rgba(45, 212, 191, 0.35);
+}
+
+/* thin scrollbar for the sidebar/checklist areas */
+.thin-scroll::-webkit-scrollbar {
+  width: 8px;
+}
+.thin-scroll::-webkit-scrollbar-thumb {
+  background: #1f2937;
+  border-radius: 8px;
+}
