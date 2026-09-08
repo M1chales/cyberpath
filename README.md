@@ -39,3 +39,4 @@ refresh or direct link.
 - `src/console-sim/` — the Console's terminal engine, command evaluation, and procedural world
   generator.
 - `src/state/` — app-wide XP/progress state and the persistent Console world state.
+
