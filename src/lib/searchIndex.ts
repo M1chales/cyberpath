@@ -20,6 +20,8 @@ const STATIC_PAGES: SearchItem[] = [
   { id: 'page-portfolio', title: 'Portfolio', subtitle: 'Your compiled deliverables and progress', category: 'Page', route: '/portfolio', keywords: 'portfolio resume deliverables' },
   { id: 'page-careers', title: 'Careers & Certs', subtitle: 'Roles, certifications, and pacing', category: 'Page', route: '/careers', keywords: 'careers certifications jobs certs comptia' },
   { id: 'page-progress', title: 'Progress', subtitle: 'XP, badges, and streak', category: 'Page', route: '/progress', keywords: 'progress xp badges streak level' },
+  { id: 'page-privacy', title: 'Privacy Policy', subtitle: 'What data is (and isn\'t) collected', category: 'Page', route: '/privacy', keywords: 'privacy policy data localstorage cookies' },
+  { id: 'page-terms', title: 'Terms of Use', subtitle: 'Authorized use, liability, and disclaimers', category: 'Page', route: '/terms', keywords: 'terms of use liability disclaimer legal' },
 ]
 
 export function buildSearchIndex(): SearchItem[] {

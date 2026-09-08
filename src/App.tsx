@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Link, Route, Routes } from 'react-router-dom'
 import Nav from './components/Nav'
 import IncidentToast from './components/IncidentToast'
 import SearchPalette from './components/SearchPalette'
@@ -10,6 +10,8 @@ import MasteryTrack from './pages/MasteryTrack'
 import MasteryModulePage from './pages/MasteryModulePage'
 import Progress from './pages/Progress'
 import Careers from './pages/Careers'
+import Privacy from './pages/Privacy'
+import Terms from './pages/Terms'
 import NotFound from './pages/NotFound'
 
 // Games and the Console pull in real weight (data catalogs, the console-sim engine's UI, etc.)
@@ -89,6 +91,8 @@ export default function App() {
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/progress" element={<Progress />} />
             <Route path="/careers" element={<Careers />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/terms" element={<Terms />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -101,6 +105,11 @@ export default function App() {
         <p className="mt-2">
           All progress is stored only in your browser's local storage — nothing is sent to a server, and clearing
           your browser data or switching devices will reset it.
+        </p>
+        <p className="mt-3 flex items-center justify-center gap-3">
+          <Link to="/privacy" className="hover:text-slate-400">Privacy Policy</Link>
+          <span className="text-slate-800">·</span>
+          <Link to="/terms" className="hover:text-slate-400">Terms of Use</Link>
         </p>
       </footer>
       <IncidentToast />
