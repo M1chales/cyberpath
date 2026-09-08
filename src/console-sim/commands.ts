@@ -4,6 +4,7 @@ import type { ShellState } from '../terminal-sim/types'
 import { attemptSqlLogin } from './sqlEngine'
 import { evaluatePingEndpoint } from './cmdInjection'
 import { checkJwtAdminBypass } from './jwtEngine'
+import { PRIVACY_SECTIONS, TERMS_SECTIONS, type LegalSection } from '../data/legalText'
 import type { ConsoleWorld, HostDef } from './types'
 
 export class ConsoleError extends Error {}
@@ -308,6 +309,16 @@ function doMethodology(): string[] {
   ]
 }
 
+function renderLegalText(sections: LegalSection[]): string[] {
+  const lines: string[] = []
+  for (const section of sections) {
+    if (lines.length > 0) lines.push('')
+    lines.push(section.heading.toUpperCase())
+    for (const p of section.paragraphs) lines.push(p)
+  }
+  return lines
+}
+
 // --- Filesystem delegation (real shell, real permissions, on the connected host) ---
 
 function runFsOnHost(raw: string, world: ConsoleWorld): string[] {
@@ -403,6 +414,11 @@ export function runConsoleCommand(raw: string, world: ConsoleWorld): string[] {
       return doConnect(world, args[0])
     case 'methodology':
       return doMethodology()
+    case 'privacy':
+      return renderLegalText(PRIVACY_SECTIONS)
+    case 'terms':
+    case 'tos':
+      return renderLegalText(TERMS_SECTIONS)
     case 'home':
       world.currentHostId = world.homeId
       world.currentUser = 'operator'

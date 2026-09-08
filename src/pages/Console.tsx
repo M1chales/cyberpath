@@ -101,7 +101,7 @@ export default function Console() {
           'Sniffing: tcpdump <host> [-w file] · tshark -r <file>\n' +
           'Crafting: echo [-n] <text> [| base64 [-d]] — real pipelines, e.g. building a JWT by hand\n' +
           'Once you have access: connect/ssh <host>, then real fs commands (ls, cd, cat, grep, chmod, rm, find, sudo -l, sudo <cmd>)\n' +
-          'Reference: methodology (real command examples, not answers), status\n' +
+          'Reference: methodology (real command examples, not answers), status, privacy, terms\n' +
           'Scripting: scripts, edit <name>, run <name>, stop',
       })
       return
