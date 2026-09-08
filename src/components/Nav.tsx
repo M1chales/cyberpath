@@ -11,7 +11,7 @@ const links = [
   { to: '/careers', label: 'Careers & Certs' },
 ]
 
-export default function Nav() {
+export default function Nav({ onSearchClick }: { onSearchClick: () => void }) {
   const { xp, streak } = useAppState()
 
   return (
@@ -39,20 +39,37 @@ export default function Nav() {
             </NavLink>
           ))}
         </nav>
-        <NavLink
-          to="/progress"
-          className="flex shrink-0 items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-300 hover:border-white/25"
-        >
-          <span className="font-semibold text-emerald-300">{xp.level.title}</span>
-          <span className="text-slate-600">·</span>
-          <span>{xp.totalXp} XP</span>
-          {streak.current > 0 && (
-            <>
-              <span className="text-slate-600">·</span>
-              <span>🔥{streak.current}</span>
-            </>
-          )}
-        </NavLink>
+        <div className="flex shrink-0 items-center gap-2">
+          <button
+            onClick={onSearchClick}
+            className="hidden items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-400 hover:border-white/25 hover:text-slate-200 sm:flex"
+          >
+            <span>🔍</span>
+            <span>Search</span>
+            <kbd className="rounded border border-white/10 px-1 text-[10px] text-slate-600">/</kbd>
+          </button>
+          <button
+            onClick={onSearchClick}
+            className="flex items-center justify-center rounded-full border border-white/10 bg-white/[0.03] p-1.5 text-slate-400 hover:border-white/25 hover:text-slate-200 sm:hidden"
+            aria-label="Search"
+          >
+            🔍
+          </button>
+          <NavLink
+            to="/progress"
+            className="flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-slate-300 hover:border-white/25"
+          >
+            <span className="font-semibold text-emerald-300">{xp.level.title}</span>
+            <span className="text-slate-600">·</span>
+            <span>{xp.totalXp} XP</span>
+            {streak.current > 0 && (
+              <>
+                <span className="text-slate-600">·</span>
+                <span>🔥{streak.current}</span>
+              </>
+            )}
+          </NavLink>
+        </div>
       </div>
       <nav className="flex items-center gap-1 overflow-x-auto px-4 pb-2 text-sm md:hidden">
         {links.map((link) => (

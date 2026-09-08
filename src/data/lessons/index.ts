@@ -8,6 +8,7 @@ import { MASTERY_OFFENSE_LESSONS } from './mastery-offense'
 import { MASTERY_FORENSICS_LESSONS } from './mastery-forensics'
 import { MASTERY_CLOUD_LESSONS } from './mastery-cloud'
 import { MASTERY_GRC_LESSONS } from './mastery-grc'
+import { MASTERY_SPECIALIZED_LESSONS } from './mastery-specialized'
 import type { Lesson } from './types'
 
 export type { Lesson, LessonSection } from './types'
@@ -26,6 +27,7 @@ export const MASTERY_LESSONS: Record<string, Lesson> = {
   ...MASTERY_FORENSICS_LESSONS,
   ...MASTERY_CLOUD_LESSONS,
   ...MASTERY_GRC_LESSONS,
+  ...MASTERY_SPECIALIZED_LESSONS,
 }
 
 export function getCoreLesson(id: string): Lesson | undefined {

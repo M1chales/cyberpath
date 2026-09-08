@@ -3,7 +3,8 @@ import { TOTAL_WEEKS } from '../data/curriculum'
 import { TOTAL_MASTERY_MODULES } from '../data/masteryTrack'
 import { computeBadges, computeXp } from '../lib/gamification'
 
-const STORAGE_KEY = 'cyberpath.state.v4'
+export const APP_STORAGE_KEY = 'cyberpath.state.v4'
+const STORAGE_KEY = APP_STORAGE_KEY
 const LEGACY_V3_KEY = 'cyberpath.state.v3'
 const LEGACY_V2_KEY = 'cyberpath.state.v2'
 const LEGACY_CORE_KEY = 'cyberpath.completedModules.v1'

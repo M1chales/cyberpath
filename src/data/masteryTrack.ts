@@ -436,6 +436,158 @@ export const MASTERY_TRACK: MasteryTrackDef[] = [
       },
     ],
   },
+  {
+    id: 'specialized-mastery',
+    title: 'Specialized & Emerging Security Domains',
+    color: '#fbbf24',
+    summary: 'The domains that fall outside a typical IT-security curriculum but show up constantly in real environments: physical RF networks, phones, industrial control systems, and the AI systems organizations are now bolting onto everything.',
+    modules: [
+      {
+        id: 'm-wireless',
+        kind: 'mastery',
+        title: 'Wireless & RF Security',
+        tagline: 'The network layer that travels through walls — and the attacks that only need proximity, not a foothold.',
+        objectives: [
+          'Explain the WPA2 four-way handshake and WPA3\'s SAE well enough to reason about their real-world weaknesses.',
+          'Recognize a rogue access point / evil twin attack and design a network resistant to it.',
+          'Capture and analyze wireless traffic to diagnose a real connectivity or security issue.',
+        ],
+        topics: [
+          '802.11 frame types and why unauthenticated management frames enable deauthentication attacks',
+          'WPA2 four-way handshake capture and offline cracking; WPA3 SAE and its resistance to that same attack',
+          'Rogue AP / evil twin attacks and captive-portal credential harvesting',
+          'KRACK and downgrade attacks as case studies in protocol-level (not password-level) wireless weaknesses',
+          'Bluetooth/BLE and IoT RF attack surface basics',
+          'Enterprise wireless hardening: 802.1X/EAP-TLS and wireless intrusion prevention (WIPS)',
+        ],
+        practice: [
+          'In an isolated lab against your own access point, capture a WPA2 handshake and attempt to crack it with a wordlist — never against a network you do not own or have written authorization to test.',
+          'Stand up a rogue AP with the same SSID as your own home network in an isolated lab and observe which of your devices auto-connect to it.',
+          'Compare your home network\'s real exposure before and after enabling WPA3-SAE or 802.1X, where your hardware supports it.',
+        ],
+        resources: [
+          { label: 'Aircrack-ng documentation', url: 'https://www.aircrack-ng.org/documentation.html' },
+          { label: 'NIST SP 800-153 — Guidelines for Securing WLANs', url: 'https://csrc.nist.gov/pubs/sp/800/153/final' },
+        ],
+        realWorldNote: 'Wireless attacks need physical proximity, which is exactly why they are illegal to run against anything but your own equipment or a written-scope engagement — "it was just in range" is not authorization.',
+      },
+      {
+        id: 'm-mobile-appsec',
+        kind: 'mastery',
+        title: 'Mobile Application Security Testing',
+        tagline: 'The OWASP Top 10 taught web apps — phones run their own application platform with its own vulnerability classes.',
+        objectives: [
+          'Perform static analysis on an Android APK to find hardcoded secrets and insecure configuration.',
+          'Perform dynamic analysis with an instrumentation framework to bypass a client-side security check.',
+          'Intercept and analyze a mobile app\'s network traffic through a proxy.',
+        ],
+        topics: [
+          'The OWASP Mobile Top 10 and how it differs from the web OWASP Top 10',
+          'APK structure and static analysis: decompiling with jadx/apktool, spotting hardcoded keys and debug flags',
+          'Dynamic analysis and instrumentation (Frida, Objection) to bypass client-side checks like root/jailbreak detection',
+          'Insecure local data storage and improper platform API usage',
+          'Certificate pinning, and intercepting traffic with a proxy (Burp Suite/mitmproxy) when pinning is absent or bypassed',
+          'iOS vs. Android differences in sandboxing, distribution, and attack surface',
+        ],
+        practice: [
+          'Install a deliberately vulnerable practice app (e.g. OWASP\'s MASTG crackmes, or a similar training APK) in an emulator and find its planted vulnerabilities via static analysis.',
+          'Set up Burp Suite as a proxy for a test app and intercept its traffic end to end.',
+          'Use Frida to bypass a simple root-detection or certificate-pinning check in a deliberately vulnerable practice app.',
+        ],
+        resources: [
+          { label: 'OWASP Mobile Application Security Testing Guide (MASTG)', url: 'https://mas.owasp.org/MASTG/' },
+          { label: 'OWASP Mobile Top 10', url: 'https://owasp.org/www-project-mobile-top-10/' },
+        ],
+        realWorldNote: 'Only test apps you own, that explicitly permit security testing, or that were built specifically for practice — reverse-engineering someone else\'s production app without authorization is a legal line, not just an ethical one.',
+      },
+      {
+        id: 'm-ics-scada',
+        kind: 'mastery',
+        title: 'ICS/SCADA & Critical Infrastructure Security',
+        tagline: 'Where IT security instincts are often wrong — availability and physical safety outrank confidentiality here.',
+        objectives: [
+          'Explain the Purdue Model and identify where IT/OT network boundaries need active protection.',
+          'Describe why routine IT practices (patching, active scanning) can be actively dangerous on OT networks.',
+          'Reconstruct the attack path of a real, publicly documented ICS incident end to end.',
+        ],
+        topics: [
+          'The Purdue Model: layered IT/OT segmentation and where real-world breaches cross it',
+          'ICS protocols (Modbus, DNP3, S7comm) and why most were designed with no built-in authentication',
+          'The availability-and-safety-first priority inversion versus typical IT confidentiality-first thinking',
+          'Safety instrumented systems (SIS) as a distinct, especially high-consequence target',
+          'Case studies: Stuxnet, the Ukrainian power grid attacks, and the Triton/Trisis SIS-targeting malware',
+          'ICS-specific frameworks: IEC 62443 and NIST SP 800-82',
+        ],
+        practice: [
+          'On paper, map the Purdue Model layers for a fictional water treatment plant and mark every point where an IT/OT boundary needs a control.',
+          'Read the public post-incident report for one named ICS attack (Stuxnet, the Ukraine grid attacks, or Triton) and rebuild its attack path as your own timeline.',
+          'In an isolated lab, run a Modbus simulator and observe firsthand that the protocol accepts commands with no authentication at all.',
+        ],
+        resources: [
+          { label: 'CISA ICS Advisories', url: 'https://www.cisa.gov/news-events/cybersecurity-advisories?f%5B0%5D=advisory_type%3A94' },
+          { label: 'NIST SP 800-82 — Guide to OT Security', url: 'https://csrc.nist.gov/pubs/sp/800/82/r3/final' },
+        ],
+        realWorldNote: 'A patch or a scan that is routine on a laptop can halt a production line or, in the worst documented cases, cause physical harm — OT security\'s first instinct is "will this stop the process," not "will this fix the vulnerability today."',
+      },
+      {
+        id: 'm-ai-security',
+        kind: 'mastery',
+        title: 'AI & LLM Security',
+        tagline: 'A genuinely new attack surface: the model itself is now part of the trust boundary.',
+        objectives: [
+          'Explain prompt injection and why it resists being "patched" the way a traditional injection flaw can be.',
+          'Assess an LLM-integrated application for excessive agency and sensitive-data leakage risk.',
+          'Apply the OWASP Top 10 for LLM Applications to a real or fictional system design.',
+        ],
+        topics: [
+          'Prompt injection (direct and indirect) and why it is architecturally different from SQL/command injection',
+          'Training-data poisoning and AI supply-chain risk (base models, fine-tunes, plugins/tools)',
+          'Excessive agency in agentic systems: tool-calling, autonomous multi-step actions, and blast radius',
+          'Sensitive data leakage through model outputs and retrieval-augmented generation (RAG) pipelines',
+          'Jailbreaking techniques and why they demonstrate limits rather than a fixable bug',
+          'Securing AI systems you build vs. securing your organization\'s use of third-party AI tools',
+        ],
+        practice: [
+          'Against a sandboxed, permitted target built for this purpose (a public prompt-injection CTF, or a locally hosted model you control), attempt a documented prompt-injection technique and write up what worked and why.',
+          'Threat-model a fictional internal chatbot with tool-calling access to a company database, listing every excessive-agency risk you can find.',
+          'Review the OWASP Top 10 for LLM Applications against one real AI feature — at work or in a personal project — and note every gap.',
+        ],
+        resources: [
+          { label: 'OWASP Top 10 for LLM Applications', url: 'https://owasp.org/www-project-top-10-for-large-language-model-applications/' },
+          { label: 'Gandalf — prompt injection practice (Lakera)', url: 'https://gandalf.lakera.ai/' },
+        ],
+        realWorldNote: 'This field is being written in real time — the durable skill is applying general security thinking (trust boundaries, least privilege, validating input and output) to a new architecture, not memorizing today\'s specific mitigations, which will keep changing.',
+      },
+      {
+        id: 'm-dlp-bcdr',
+        kind: 'mastery',
+        title: 'Data Protection, DLP & Business Continuity',
+        tagline: 'What happens when prevention fails and you need the organization to keep running anyway.',
+        objectives: [
+          'Design a data classification scheme and map real controls to each tier.',
+          'Evaluate where DLP tooling actually sits in an architecture and its realistic bypass limitations.',
+          'Build a business continuity/disaster recovery plan with defensible RTO/RPO targets.',
+        ],
+        topics: [
+          'Data classification and handling policy (public/internal/confidential/restricted)',
+          'DLP architecture (endpoint, network, cloud/CASB) and common, realistic bypass techniques',
+          'Encryption at rest and in transit as the real backstop when DLP inevitably fails',
+          'RTO (recovery time objective) and RPO (recovery point objective) and how they actually drive backup architecture',
+          'Business continuity planning (BCP) vs. disaster recovery (DR) vs. incident response — how the three relate and where each starts',
+          'Continuity-focused tabletop exercises, distinct from the incident-response tabletop in the core path',
+        ],
+        practice: [
+          'Write a one-page data classification policy for a fictional company and map at least one real control to each tier.',
+          'Calculate realistic RTO/RPO targets for a small business\'s file server and design a backup schedule that actually meets them.',
+          'Run a continuity-focused tabletop exercise around a ransomware scenario that takes down backups too — distinct from a pure incident-response tabletop.',
+        ],
+        resources: [
+          { label: 'NIST SP 800-34 — Contingency Planning Guide', url: 'https://csrc.nist.gov/pubs/sp/800/34/r1/final' },
+        ],
+        realWorldNote: 'DLP is frequently oversold: a competent insider or an attacker with legitimate access can usually route around it. Encryption and access control are the actual backstops — DLP is a detective and deterrent layer on top, not the last line of defense.',
+      },
+    ],
+  },
 ]
 
 export function allMasteryModules() {

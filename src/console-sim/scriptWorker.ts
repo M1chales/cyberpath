@@ -66,8 +66,14 @@ self.onmessage = async (e: MessageEvent) => {
   }
   if (msg.type === 'start') {
     try {
-      // The only thing this function closes over is `game` — no access to any outer
-      // variable, no access to `self`/`postMessage` directly, no way to reach the page.
+      // `new Function` gives the script access to this worker's own global scope (self,
+      // postMessage, fetch, setTimeout, etc.) — it can NOT see this module's own bindings
+      // (pending, nextId, call), since those are module-scoped, not global. The real security
+      // boundary isn't this function call at all: it's that this whole file runs in a genuine
+      // Web Worker, which has no DOM, no localStorage, and no reference to the main page,
+      // regardless of what a script does inside it. A page-level Content-Security-Policy
+      // (connect-src 'self') is what actually stops a script's raw `fetch` from reaching
+      // anywhere outside this origin — this function alone cannot enforce that.
       // eslint-disable-next-line no-new-func
       const runScript = new Function('game', `return (async () => {\n${msg.code}\n})()`) as (g: GameApi) => Promise<void>
       await runScript(game)

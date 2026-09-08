@@ -34,9 +34,22 @@ export default function MasteryTrack() {
         </div>
       </div>
 
-      <div className="mt-12 space-y-14">
+      <nav className="mt-8 flex flex-wrap gap-2">
         {MASTERY_TRACK.map((track) => (
-          <section key={track.id}>
+          <a
+            key={track.id}
+            href={`#${track.id}`}
+            className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.02] px-3 py-1 text-xs text-slate-400 hover:border-white/25 hover:text-slate-200"
+          >
+            <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: track.color }} />
+            {track.title}
+          </a>
+        ))}
+      </nav>
+
+      <div className="mt-8 space-y-14">
+        {MASTERY_TRACK.map((track) => (
+          <section key={track.id} id={track.id} className="scroll-mt-20">
             <div className="flex items-baseline gap-3">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: track.color }} />
               <h2 className="text-xl font-bold text-white">{track.title}</h2>

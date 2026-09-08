@@ -1,3 +1,4 @@
+import { useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { allModules } from '../data/curriculum'
 import { allMasteryModules } from '../data/masteryTrack'
@@ -5,6 +6,7 @@ import { CORE_QUIZZES, MASTERY_QUIZZES, QUIZ_LENGTH } from '../data/quizzes'
 import { CORE_CHALLENGES, MASTERY_CHALLENGES, CHALLENGE_MAX_RATING } from '../data/challenges'
 import { GAME_DEFS, xpFromGameScore } from '../lib/gamification'
 import { useAppState } from '../state/AppStateContext'
+import { downloadBackup, importBackup } from '../lib/backup'
 import ProgressBar from '../components/ProgressBar'
 
 const TOTAL_QUIZZABLE = Object.keys(CORE_QUIZZES).length + Object.keys(MASTERY_QUIZZES).length
@@ -18,6 +20,22 @@ const MODULE_TARGETS: Record<string, { title: string; route: string }> = {
 
 export default function Progress() {
   const { xp, badges, streak, coreProgress, masteryProgress, gameBest, gamePlays, quizBest, challengeBest, resetAll } = useAppState()
+  const [restoreStatus, setRestoreStatus] = useState<{ ok: boolean; message: string } | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  async function handleRestoreFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+    const text = await file.text()
+    const result = importBackup(text)
+    if (result.ok) {
+      setRestoreStatus({ ok: true, message: 'Restored — reloading…' })
+      window.location.reload()
+    } else {
+      setRestoreStatus({ ok: false, message: result.error })
+    }
+  }
 
   const earnedBadges = badges.filter((b) => b.earned)
   const lockedBadges = badges.filter((b) => !b.earned)
@@ -228,7 +246,36 @@ export default function Progress() {
         )}
       </section>
 
-      <section className="mt-12 border-t border-white/10 pt-6">
+      <section className="mt-12 rounded-lg border border-white/10 bg-white/[0.03] p-6">
+        <h2 className="text-lg font-bold text-white">Backup your progress</h2>
+        <p className="mt-2 text-sm text-slate-400">
+          There's no account here on purpose — nothing to sign up for, nothing to lose access to. But that also
+          means everything lives only in this browser: clearing site data, using private browsing, or opening this
+          on a different device or browser starts from zero. Download a backup file now and then, and you can
+          restore it anywhere.
+        </p>
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <button
+            onClick={downloadBackup}
+            className="rounded-md bg-emerald-400 px-4 py-2 text-sm font-semibold text-black transition-colors hover:bg-emerald-300"
+          >
+            Download backup
+          </button>
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            className="rounded-md border border-white/15 px-4 py-2 text-sm text-slate-300 hover:border-white/30"
+          >
+            Restore from backup
+          </button>
+          <input ref={fileInputRef} type="file" accept="application/json" onChange={handleRestoreFile} className="hidden" />
+        </div>
+        {restoreStatus && (
+          <p className={`mt-3 text-sm ${restoreStatus.ok ? 'text-emerald-300' : 'text-rose-300'}`}>{restoreStatus.message}</p>
+        )}
+        <p className="mt-3 text-xs text-slate-500">Restoring overwrites this browser's current progress with whatever is in the file.</p>
+      </section>
+
+      <section className="mt-6 border-t border-white/10 pt-6">
         <button onClick={resetAll} className="text-xs text-slate-600 underline decoration-dotted hover:text-slate-400">
           reset all progress, badges, and scores
         </button>

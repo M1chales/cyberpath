@@ -1,7 +1,8 @@
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import Nav from './components/Nav'
 import IncidentToast from './components/IncidentToast'
+import SearchPalette from './components/SearchPalette'
 import Home from './pages/Home'
 import Curriculum from './pages/Curriculum'
 import ModulePage from './pages/ModulePage'
@@ -37,10 +38,33 @@ function RouteFallback() {
   )
 }
 
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false
+  const tag = target.tagName
+  return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || target.isContentEditable
+}
+
 export default function App() {
+  const [searchOpen, setSearchOpen] = useState(false)
+
+  useEffect(() => {
+    function handleKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearchOpen(true)
+      } else if (e.key === '/' && !isEditableTarget(e.target)) {
+        e.preventDefault()
+        setSearchOpen(true)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   return (
     <div className="min-h-screen bg-[#05070a]">
-      <Nav />
+      <Nav onSearchClick={() => setSearchOpen(true)} />
+      {searchOpen && <SearchPalette onClose={() => setSearchOpen(false)} />}
       <main>
         <Suspense fallback={<RouteFallback />}>
           <Routes>

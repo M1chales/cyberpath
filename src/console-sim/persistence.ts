@@ -1,7 +1,8 @@
 import { generateWorld } from './generator'
 import type { ConsoleWorld } from './types'
 
-const STORAGE_KEY = 'cyberpath.console.v5'
+export const CONSOLE_STORAGE_KEY = 'cyberpath.console.v5'
+const STORAGE_KEY = CONSOLE_STORAGE_KEY
 
 export function loadWorld(): ConsoleWorld {
   try {
