@@ -114,6 +114,15 @@ export const GAME_DEFS: GameDef[] = [
     scoreUnit: 'objectives',
   },
   {
+    id: 'log-analysis',
+    title: 'Log Analysis',
+    description: 'Real-format SIEM log excerpts (auth, web, audit, DNS, firewall). Read the evidence, call it right.',
+    emoji: '📋',
+    route: '/games/log-analysis',
+    maxScore: 6,
+    scoreUnit: 'correct',
+  },
+  {
     id: 'console-classes',
     title: 'Console: Vulnerability Classes',
     description: 'The persistent Console world — distinct real vulnerability classes actually exploited.',

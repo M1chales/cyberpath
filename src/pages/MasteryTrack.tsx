@@ -1,10 +1,14 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MASTERY_TRACK, CONTINUOUS_PRACTICES } from '../data/masteryTrack'
 import { useAppState } from '../state/AppStateContext'
 import ProgressBar from '../components/ProgressBar'
+import TrackFinder from '../components/TrackFinder'
 
 export default function MasteryTrack() {
-  const { mastery, masteryProgress, resetMastery } = useAppState()
+  const { mastery, masteryProgress, resetMastery, preferredTrackId } = useAppState()
+  const [showFinder, setShowFinder] = useState(false)
+  const recommendedTrack = MASTERY_TRACK.find((t) => t.id === preferredTrackId)
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-12">
@@ -34,6 +38,28 @@ export default function MasteryTrack() {
         </div>
       </div>
 
+      <div className="mt-6">
+        {showFinder ? (
+          <TrackFinder onDone={() => setShowFinder(false)} />
+        ) : recommendedTrack ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-fuchsia-400/20 bg-fuchsia-400/5 p-4 text-sm">
+            <span className="text-fuchsia-100">
+              Recommended for you: <a href={`#${recommendedTrack.id}`} className="font-semibold text-fuchsia-300 hover:text-fuchsia-200">{recommendedTrack.title}</a>
+            </span>
+            <button onClick={() => setShowFinder(true)} className="text-xs text-slate-500 underline decoration-dotted hover:text-slate-300">
+              retake the quiz
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowFinder(true)}
+            className="rounded-lg border border-fuchsia-400/20 bg-fuchsia-400/5 px-4 py-3 text-sm text-fuchsia-100 transition-colors hover:bg-fuchsia-400/10"
+          >
+            Not sure where to start? <span className="font-semibold text-fuchsia-300">Find your track →</span>
+          </button>
+        )}
+      </div>
+
       <nav className="mt-8 flex flex-wrap gap-2">
         {MASTERY_TRACK.map((track) => (
           <a
@@ -53,6 +79,11 @@ export default function MasteryTrack() {
             <div className="flex items-baseline gap-3">
               <div className="h-2 w-2 rounded-full" style={{ backgroundColor: track.color }} />
               <h2 className="text-xl font-bold text-white">{track.title}</h2>
+              {track.id === preferredTrackId && (
+                <span className="rounded-full bg-fuchsia-400/10 px-2 py-0.5 text-[11px] font-medium text-fuchsia-300">
+                  recommended for you
+                </span>
+              )}
             </div>
             <p className="mt-2 max-w-2xl text-sm text-slate-400">{track.summary}</p>
             <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

@@ -237,3 +237,132 @@ export const IR_PHASES = [
   { id: 'recover', label: 'Recovery', hint: 'Restore systems to normal operation, verified clean.' },
   { id: 'lessons', label: 'Lessons Learned', hint: 'Document what happened and improve the plan for next time.' },
 ]
+
+export interface LogAnalysisRound {
+  id: string
+  title: string
+  source: string
+  log: string
+  question: string
+  choices: string[]
+  correct: number
+  explanation: string
+}
+
+// IPs use the RFC 5737 documentation ranges (192.0.2.0/24, 198.51.100.0/24, 203.0.113.0/24) —
+// the same convention real training material uses so nothing here is ever a routable address.
+export const LOG_ANALYSIS_ROUNDS: LogAnalysisRound[] = [
+  {
+    id: 'ssh-bruteforce',
+    title: 'SSH authentication log',
+    source: '/var/log/auth.log',
+    log:
+      'Mar 14 02:11:03 web01 sshd[2201]: Failed password for root from 203.0.113.44 port 51110 ssh2\n' +
+      'Mar 14 02:11:04 web01 sshd[2202]: Failed password for root from 203.0.113.44 port 51112 ssh2\n' +
+      'Mar 14 02:11:05 web01 sshd[2203]: Failed password for root from 203.0.113.44 port 51114 ssh2\n' +
+      'Mar 14 02:11:06 web01 sshd[2204]: Failed password for root from 203.0.113.44 port 51116 ssh2\n' +
+      'Mar 14 02:11:07 web01 sshd[2205]: Accepted password for root from 203.0.113.44 port 51118 ssh2',
+    question: 'What actually happened here?',
+    choices: [
+      'A brute-force attempt against root that eventually succeeded',
+      'A normal admin who mistyped their password four times',
+      'A false positive — this is routine SSH traffic',
+    ],
+    correct: 0,
+    explanation:
+      'Four rapid failed password attempts for root from the same IP within 4 seconds, immediately followed by a success, is the exact signature of a successful brute-force attack — not a typo pattern (too fast, too regular) and not routine traffic (root logins over password auth from an external IP are already a red flag on their own).',
+  },
+  {
+    id: 'sqli-access-log',
+    title: 'Web server access log',
+    source: '/var/log/nginx/access.log',
+    log:
+      '198.51.100.23 - - [14/Mar/2026:09:22:01] "GET /products?id=17 HTTP/1.1" 200 4211\n' +
+      '198.51.100.23 - - [14/Mar/2026:09:22:04] "GET /products?id=17\' OR \'1\'=\'1 HTTP/1.1" 500 612\n' +
+      '198.51.100.23 - - [14/Mar/2026:09:22:09] "GET /products?id=17\' UNION SELECT username,password FROM users-- HTTP/1.1" 200 8830',
+    question: 'Which line is the strongest evidence of a successful SQL injection?',
+    choices: [
+      'The first request — normal product lookup',
+      'The second request — the 500 error after the quote character',
+      'The third request — a 200 OK with an 8830-byte response after a UNION SELECT payload',
+    ],
+    correct: 2,
+    explanation:
+      "The second line (a 500 error right after injecting a quote) shows the app is vulnerable — but it's only proof the input broke something. The third line is the actual exploitation: a UNION SELECT pulling username/password columns that returned 200 OK with a response far larger than the normal product page, meaning the injected query actually ran and returned data.",
+  },
+  {
+    id: 'privesc-sudo',
+    title: 'Command audit log',
+    source: '/var/log/audit.log (ausearch -k privesc)',
+    log:
+      'type=USER_CMD msg=audit(1710400000): user=deploy cwd="/home/deploy" cmd="sudo -l"\n' +
+      'type=USER_CMD msg=audit(1710400012): user=deploy cwd="/home/deploy" cmd="sudo /usr/bin/vim /etc/passwd"\n' +
+      'type=USER_CMD msg=audit(1710400045): user=deploy cwd="/home/deploy" cmd="sudo /usr/bin/find / -exec /bin/sh \\;"',
+    question: 'What is the deploy user actually doing?',
+    choices: [
+      'Routine sysadmin maintenance, nothing unusual',
+      'Checking their sudo rights, then abusing an overly-permissive sudo rule to spawn a root shell',
+      'Debugging a broken deployment script',
+    ],
+    correct: 1,
+    explanation:
+      '`sudo -l` checks what the user is allowed to run as root — completely normal on its own. But immediately after, `sudo vim /etc/passwd` and `sudo find / -exec /bin/sh` are both classic GTFOBins-style privilege escalation: if sudo lets this user run vim or find at all, either one can be abused to spawn a root shell, which is exactly the pattern here — recon, then exploitation of the rule.',
+  },
+  {
+    id: 'dns-exfil',
+    title: 'DNS query log',
+    source: '/var/log/dns-queries.log',
+    log:
+      '09:41:02 query: A? mail.example.com\n' +
+      '09:41:03 query: A? cdn.example.com\n' +
+      '09:41:05 query: TXT? 4a6f6e53656372657446696c65446174613031.exfil.203-0-113-9.net\n' +
+      '09:41:05 query: TXT? 6e657874436875six6b446174613032.exfil.203-0-113-9.net\n' +
+      '09:41:06 query: TXT? 66696e616c436875654461746133.exfil.203-0-113-9.net',
+    question: 'What do the three TXT queries indicate?',
+    choices: [
+      'Normal mail server TXT record (SPF/DKIM) lookups',
+      'DNS tunneling — data being exfiltrated encoded in subdomain labels',
+      'A misconfigured internal DNS resolver',
+    ],
+    correct: 1,
+    explanation:
+      "Long, high-entropy hex-looking labels as TXT queries to the same unfamiliar domain, arriving in a rapid sequence, is a classic DNS exfiltration/tunneling pattern — the attacker encodes stolen data into subdomain labels and queries their own DNS server to smuggle it out, since outbound DNS is rarely blocked even in restrictive networks.",
+  },
+  {
+    id: 'webshell-upload',
+    title: 'Web server access log',
+    source: '/var/log/nginx/access.log',
+    log:
+      '192.0.2.77 - - [14/Mar/2026:14:02:10] "POST /uploads/avatar HTTP/1.1" 200 143\n' +
+      '192.0.2.77 - - [14/Mar/2026:14:02:41] "GET /uploads/avatar/shell.php?cmd=id HTTP/1.1" 200 512\n' +
+      '192.0.2.77 - - [14/Mar/2026:14:02:55] "GET /uploads/avatar/shell.php?cmd=cat+/etc/passwd HTTP/1.1" 200 1830',
+    question: 'What already happened by the second line?',
+    choices: [
+      'Nothing yet — just a user uploading a profile picture',
+      'A web shell was already uploaded and is now being actively used to run commands',
+      'A failed upload attempt that the server correctly rejected',
+    ],
+    correct: 1,
+    explanation:
+      'The upload (line 1, 200 OK) succeeded with no file-type validation catching a .php file in an avatar upload. Line 2 already proves compromise — `shell.php?cmd=id` is an attacker running arbitrary commands through the uploaded file, and line 3 confirms it by reading /etc/passwd. By the time you see line 2, containment (not just fixing the upload validation) is already needed.',
+  },
+  {
+    id: 'benign-scan',
+    title: 'Firewall log',
+    source: '/var/log/firewall.log',
+    log:
+      '10:15:00 ALLOW 10.0.4.12:443 -> 10.0.1.5:443 TCP established\n' +
+      '10:15:01 ALLOW 10.0.4.12:443 -> 10.0.1.5:443 TCP established\n' +
+      '10:15:02 ALLOW 10.0.4.12:443 -> 10.0.1.5:443 TCP established\n' +
+      '10:15:03 DENY  10.0.4.12:8080 -> 10.0.1.5:8080 TCP (no rule)',
+    question: 'What should a SOC analyst do with this specific log excerpt?',
+    choices: [
+      'Escalate immediately as a confirmed intrusion',
+      'Nothing urgent — this looks like normal internal traffic, with one blocked port that the firewall already handled correctly',
+      'Isolate 10.0.1.5 from the network as a precaution',
+    ],
+    correct: 1,
+    explanation:
+      "Repeated HTTPS traffic between two internal, private (10.0.0.0/8) addresses is routine — and the one denied connection on a non-standard port was already blocked by the firewall doing its job. Treating every blocked connection as an incident is how real SOCs burn out on alert fatigue; recognizing genuinely benign traffic is as much a skill as spotting malicious traffic.",
+  },
+]

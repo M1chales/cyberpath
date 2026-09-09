@@ -31,6 +31,7 @@ const TerminalRange = lazy(() => import('./games/TerminalRange'))
 const SimIncident = lazy(() => import('./games/SimIncident'))
 const SimRecon = lazy(() => import('./games/SimRecon'))
 const SimHardening = lazy(() => import('./games/SimHardening'))
+const LogAnalysis = lazy(() => import('./games/LogAnalysis'))
 
 function RouteFallback() {
   return (
@@ -87,6 +88,7 @@ export default function App() {
             <Route path="/games/sim-incident" element={<SimIncident />} />
             <Route path="/games/sim-recon" element={<SimRecon />} />
             <Route path="/games/sim-hardening" element={<SimHardening />} />
+            <Route path="/games/log-analysis" element={<LogAnalysis />} />
             <Route path="/console" element={<Console />} />
             <Route path="/portfolio" element={<Portfolio />} />
             <Route path="/progress" element={<Progress />} />

@@ -17,6 +17,7 @@ interface StoredState {
   quizBest: Record<string, number>
   challengeBest: Record<string, number>
   streak: { current: number; longest: number; lastActive: string | null }
+  preferredTrackId: string | null
 }
 
 function emptyState(): StoredState {
@@ -28,6 +29,7 @@ function emptyState(): StoredState {
     quizBest: {},
     challengeBest: {},
     streak: { current: 0, longest: 0, lastActive: null },
+    preferredTrackId: null,
   }
 }
 
@@ -54,6 +56,7 @@ function loadInitial(): StoredState {
         quizBest: parsed.quizBest ?? {},
         challengeBest: parsed.challengeBest ?? {},
         streak: parsed.streak ?? { current: 0, longest: 0, lastActive: null },
+        preferredTrackId: typeof parsed.preferredTrackId === 'string' ? parsed.preferredTrackId : null,
       }
     }
     // migrate from the pre-challenge storage key if present
@@ -68,6 +71,7 @@ function loadInitial(): StoredState {
         quizBest: parsed.quizBest ?? {},
         challengeBest: {},
         streak: parsed.streak ?? { current: 0, longest: 0, lastActive: null },
+        preferredTrackId: null,
       }
     }
     // migrate from the pre-quiz storage key if present
@@ -108,6 +112,8 @@ interface AppStateValue {
   quizBest: Record<string, number>
   challengeBest: Record<string, number>
   streak: { current: number; longest: number; lastActive: string | null }
+  preferredTrackId: string | null
+  setPreferredTrack: (trackId: string | null) => void
   toggleCore: (id: string) => void
   toggleMastery: (id: string) => void
   recordGameResult: (gameId: string, score: number) => void
@@ -173,6 +179,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
       challengeBest: { ...prev.challengeBest, [moduleId]: Math.max(prev.challengeBest[moduleId] ?? 0, rating) },
     }))
 
+  const setPreferredTrack = (trackId: string | null) => setState((prev) => ({ ...prev, preferredTrackId: trackId }))
+
   const resetCore = () => setState((prev) => ({ ...prev, core: [] }))
   const resetMastery = () => setState((prev) => ({ ...prev, mastery: [] }))
   const resetAll = () => setState(emptyState())
@@ -197,6 +205,8 @@ export function AppStateProvider({ children }: { children: ReactNode }) {
     quizBest: state.quizBest,
     challengeBest: state.challengeBest,
     streak: state.streak,
+    preferredTrackId: state.preferredTrackId,
+    setPreferredTrack,
     toggleCore,
     toggleMastery,
     recordGameResult,
