@@ -39,9 +39,13 @@ const WELCOME: LogEntry[] = [
 ]
 
 export default function Console() {
-  const { world, mutateWorld, resetConsole } = useConsoleWorld()
+  const { world, mutateWorld, resetConsole, activeIncident } = useConsoleWorld()
   const { recordGameResult } = useAppState()
   const [log, setLog] = useState<LogEntry[]>(WELCOME)
+  // Landing here with a live incident (e.g. via the toast's "Respond now") opens straight into
+  // the incident tab. Arriving normally with nothing pending opens the plain terminal.
+  const [view, setView] = useState<'terminal' | 'incident'>(() => (activeIncident ? 'incident' : 'terminal'))
+  const [incidentNow, setIncidentNow] = useState(() => Date.now())
   const [input, setInput] = useState('')
   const [history, setHistory] = useState<string[]>([])
   const [historyPos, setHistoryPos] = useState<number | null>(null)
@@ -50,6 +54,7 @@ export default function Console() {
 
   const logEndRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
+  const lastIncidentIdRef = useRef<string | null>(activeIncident?.id ?? null)
 
   function appendLog(line: string) {
     append({ kind: 'script', text: line })
@@ -71,6 +76,12 @@ export default function Console() {
   useEffect(() => {
     recordGameResult('console-roots', rootedCount)
   }, [rootedCount, recordGameResult])
+
+  useEffect(() => {
+    if (!activeIncident) return
+    const id = setInterval(() => setIncidentNow(Date.now()), 1000)
+    return () => clearInterval(id)
+  }, [activeIncident])
 
   function append(entries: LogEntry | LogEntry[]) {
     setLog((prev) => [...prev, ...(Array.isArray(entries) ? entries : [entries])])
@@ -192,6 +203,18 @@ export default function Console() {
   const userCount = world.hosts.filter((h) => h.userCompromised).length
   const rootCount = world.hosts.filter((h) => h.rootObtained).length
 
+  // Remember whichever host is (or was) the active incident, mutated during render rather than
+  // via an effect — so the Incident tab can still show a resolved/missed outcome after
+  // activeIncident itself goes null, without an extra render pass just to update a ref value.
+  if (activeIncident && activeIncident.id !== lastIncidentIdRef.current) {
+    lastIncidentIdRef.current = activeIncident.id
+  }
+  const incidentHostId = lastIncidentIdRef.current
+  const incidentHost = incidentHostId ? world.hosts.find((h) => h.id === incidentHostId) ?? null : null
+  const incidentSecondsLeft = incidentHost?.incidentExpiresAt ? Math.max(0, Math.round((incidentHost.incidentExpiresAt - incidentNow) / 1000)) : 0
+  const incidentMm = Math.floor(incidentSecondsLeft / 60)
+  const incidentSs = String(incidentSecondsLeft % 60).padStart(2, '0')
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="flex items-center justify-between">
@@ -206,6 +229,61 @@ export default function Console() {
           ← Games hub
         </Link>
       </div>
+
+      {incidentHost && (
+        <div className="mt-6 flex gap-1">
+          <button
+            onClick={() => setView('terminal')}
+            className={`rounded-t-md px-4 py-2 text-sm font-semibold transition-colors ${
+              view === 'terminal' ? 'bg-white/10 text-white' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            Terminal
+          </button>
+          <button
+            onClick={() => setView('incident')}
+            className={`rounded-t-md px-4 py-2 text-sm font-semibold transition-colors ${
+              view === 'incident' ? 'bg-rose-400/15 text-rose-300' : 'text-slate-500 hover:text-slate-300'
+            }`}
+          >
+            🚨 Incident: {incidentHost.hostname}
+          </button>
+        </div>
+      )}
+
+      {view === 'incident' && incidentHost && (
+        <div
+          className={`mt-2 rounded-lg border p-4 ${
+            incidentHost.incidentResolved === 'pending'
+              ? 'border-rose-400/40 bg-rose-400/5'
+              : incidentHost.incidentResolved === 'resolved'
+                ? 'border-emerald-400/40 bg-emerald-400/5'
+                : 'border-amber-400/40 bg-amber-400/5'
+          }`}
+        >
+          {incidentHost.incidentResolved === 'pending' ? (
+            <>
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-rose-300">🚨 Live incident on {incidentHost.hostname}</span>
+                <span className="font-mono text-sm text-rose-300">
+                  {incidentMm}:{incidentSs} left
+                </span>
+              </div>
+              <p className="mt-2 text-sm text-slate-300">{incidentHost.banner}</p>
+              <p className="mt-2 text-xs text-slate-500">
+                Basic info: this is a real host in your network, same as any other — no shortcut here. Discover it
+                (<code className="rounded bg-white/10 px-1">scan</code>/<code className="rounded bg-white/10 px-1">net</code> if you haven't), find and
+                use the actual vulnerability to get access, then <code className="rounded bg-white/10 px-1">connect {incidentHost.hostname}</code> to
+                lock it down before time runs out. The terminal below is the same one you always use.
+              </p>
+            </>
+          ) : incidentHost.incidentResolved === 'resolved' ? (
+            <p className="text-sm text-emerald-300">✅ Resolved — you got to {incidentHost.hostname} before the attacker finished.</p>
+          ) : (
+            <p className="text-sm text-amber-300">⌛ Missed — time ran out on {incidentHost.hostname} this time. It happens; the next one's a fresh chance.</p>
+          )}
+        </div>
+      )}
 
       <div className="mt-6 grid gap-4 lg:grid-cols-[1fr_280px]">
         <div
